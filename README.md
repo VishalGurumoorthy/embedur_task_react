@@ -1,0 +1,1 @@
+This is a basic repository with a react frontend and ruby backend. This doesnt have any JWT authentication as I am currently learning. Will be incorporating the same to this project.
