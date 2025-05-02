@@ -1,0 +1,68 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: vishal
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: book_list
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready","-U","vishal","-d","book_list"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
+      start_period: 10s
+  backend:
+    build: 
+      context: ./backend
+    container_name: ruby-backend
+    ports:
+      - "4567:4567"
+    depends_on:
+    # - db
+      db:
+        condition: service_healthy
+      # db:
+      #   condition: service_healthy
+    environment:
+      - DB_HOST=db
+      - DATABASE_URL=postgres://vishal:root@db:5432/book_list
+    restart: always
+
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: react-frontend
+    ports:
+      - "3000:3000" 
+    depends_on:
+      - backend
+    restart: always
+    environment:
+      REACT_APP_BACKEND_URL: http://localhost:4567
+
+  # db:
+  #   image: postgres:15
+  #   container_name: postgres-db
+  #   environment:
+  #     POSTGRES_USER: vishal
+  #     POSTGRES_PASSWORD: root
+  #     POSTGRES_DB: book_list
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - db_data:/var/lib/postgresql/data
+  #   restart: always
+  #   healthcheck:
+  #     test: ["CMD", "pg_isready","-U","vishal","-d","book_list"]
+  #     interval: 5s
+  #     timeout: 30s
+  #     retries: 5
+  #     start_period: 30s
+
+volumes:
+  db_data:
